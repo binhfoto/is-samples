@@ -5,6 +5,7 @@
   "dependencies": {
     "axios": "^0.19.0",
     "bootstrap": "^4.3.1",
+    "crypto": "^1.0.1",
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
     "react-json-view": "^1.19.1",
@@ -14,7 +15,7 @@
   "scripts": {
     "start": "react-scripts start",
     "demo": "npm run demo-bash",
-    "demo-bash": "HTTPS=true PORT=9000 npm start",
+    "demo-bash": "HTTPS=true PORT=9000 yarn start",
     "demo-cmd": "set HTTPS=true && set PORT=9000 && npm start",
     "demo-pshell": "($env:HTTPS = \"true\") -and ($env:PORT = \"9000\") -and (npm start)",
     "build": "react-scripts build",

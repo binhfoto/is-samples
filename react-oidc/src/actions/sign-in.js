@@ -23,8 +23,8 @@ import {CONFIG} from "../config";
 /**
  * Sends an authorization request.
  */
-export const sendAuthorizationRequest = () => {
-    let authorizeRequest = `${ CONFIG.AUTHORIZE_ENDPOINT }?response_type=${ CONFIG.RESPONSE_TYPE }&scope=${ CONFIG.SCOPE }&redirect_uri=${ CONFIG.REDIRECT_URI }&client_id=${ CONFIG.CLIENT_ID }`;
+export const sendAuthorizationRequest = (codeChallenge) => {
+    let authorizeRequest = `${ CONFIG.AUTHORIZE_ENDPOINT }?response_type=${ CONFIG.RESPONSE_TYPE }&scope=${ CONFIG.SCOPE }&redirect_uri=${ CONFIG.REDIRECT_URI }&client_id=${ CONFIG.CLIENT_ID }&code_challenge=${ codeChallenge }&code_challenge_method=S256`;
     window.location.href = authorizeRequest;
 };
 
@@ -34,13 +34,14 @@ export const sendAuthorizationRequest = () => {
  * @param code Authorization code
  * @return {Promise<AxiosResponse<T> | never>}
  */
-export const sendTokenRequest = (code) => {
+export const sendTokenRequest = (code, codeVerifier) => {
     const body = [];
     body.push(`client_id=${ CONFIG.CLIENT_ID }`);
     body.push(`client_secret=${ CONFIG.CLIENT_SECRET }`);
     body.push(`code=${ code }`);
     body.push(`grant_type=${ CONFIG.GRANT_TYPE }`);
     body.push(`redirect_uri=${ CONFIG.REDIRECT_URI }`);
+    body.push(`code_verifier=${ codeVerifier }`);
 
     return axios.post(`${ CONFIG.TOKEN_ENDPOINT }`, body.join("&"), getTokenRequestHeaders())
         .then(response => {

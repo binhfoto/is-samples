@@ -19,19 +19,42 @@
 import React from "react";
 import logo from "./logo.svg";
 import ISLogo from "./wso2_is.svg";
-import { sendAuthorizationRequest, sendTokenRequest } from "./actions/sign-in";
-import ReactJson from 'react-json-view'
+import {sendAuthorizationRequest, sendTokenRequest} from "./actions/sign-in";
+import ReactJson from 'react-json-view';
 import {dispatchLogout} from "./actions/sign-out";
-import {isValidSession, getAllSessionParameters, decodeIdToken} from "./actions/session";
+import {
+    isValidSession,
+    getAllSessionParameters,
+    decodeIdToken,
+    getCodeVerifier,
+    setCodeVerifier
+} from "./actions/session";
+import getPKCE from "./actions/pkce";
 
 class HomeComponent extends React.Component {
-    state = {
-        idToken: {},
-        tokenResponse: {},
-        isLoggedIn: false
-    };
 
-    componentWillMount() {
+    constructor(props) {
+        super(props);
+
+        this.pkcePair = getPKCE();
+
+        this.state = {
+            idToken: {},
+            tokenResponse: {},
+            isLoggedIn: false
+        };
+    }
+
+    componentDidMount() {
+        const codeVerifier = getCodeVerifier();
+        const code = new URL(window.location.href).searchParams.get("code");
+
+        if (!code || !codeVerifier) {
+            setCodeVerifier(this.pkcePair.codeVerifier);
+        }
+    }
+
+    UNSAFE_componentWillMount() {
         // See if there is a valid session.
         if (isValidSession()) {
             const session = getAllSessionParameters();
@@ -56,18 +79,20 @@ class HomeComponent extends React.Component {
 
         // If a authorization code exists, sends a token request.
         if (code) {
-            sendTokenRequest(code)
+            const codeVerifier = getCodeVerifier();
+
+            sendTokenRequest(code, codeVerifier)
                 .then(response => {
                     console.log("TOKEN REQUEST SUCCESS", response);
                     this.setState({
                         tokenResponse: response[0],
                         idToken: response[1],
                         isLoggedIn: true
-                    })
+                    });
                 })
                 .catch((error => {
                     console.log("TOKEN REQUEST ERROR", error);
-                    this.setState({ isLoggedIn: false });
+                    this.setState({isLoggedIn: false});
                 }));
         }
     }
@@ -76,7 +101,7 @@ class HomeComponent extends React.Component {
      * Handles login button click
      */
     handleLoginBtnClick = () => {
-        sendAuthorizationRequest();
+        sendAuthorizationRequest(this.pkcePair.codeChallenge);
     };
 
     /**
@@ -87,27 +112,27 @@ class HomeComponent extends React.Component {
     };
 
     render() {
-        const { tokenResponse, idToken, isLoggedIn } = this.state;
+        const {tokenResponse, idToken, isLoggedIn} = this.state;
         return (
             <div className="container home-container">
                 <div className="wso2-logo-block">
-                    <img src={logo} className="wso2-logo" alt="logo" />
-                    <br />
+                    <img src={logo} className="wso2-logo" alt="logo"/>
+                    <br/>
                     <img src={ISLogo} className="wso2-is-logo" alt="is_logo"/><span>OIDC SPA React Demo</span>
                 </div>
-                <br />
+                <br/>
                 {
-                    isLoggedIn?
+                    isLoggedIn ?
                         <>
-                            <br />
+                            <br/>
                             <h2>Token Response</h2>
                             <div className="card access-request-block">
-                                <ReactJson src={tokenResponse} collapseStringsAfterLength={50} />
+                                <ReactJson src={tokenResponse} collapseStringsAfterLength={50}/>
                             </div>
-                            <br />
+                            <br/>
                             <h2>ID Token</h2>
                             <div className="card token-request-block">
-                                <ReactJson src={idToken} collapseStringsAfterLength={50} />
+                                <ReactJson src={idToken} collapseStringsAfterLength={50}/>
                             </div>
                             <br/>
                             <button className="btn btn-danger" onClick={this.handleLogoutBtnClick}>LOGOUT</button>

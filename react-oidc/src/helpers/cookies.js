@@ -1,7 +1,7 @@
 import Cookies from "universal-cookie";
 import { CONFIG } from "../config";
 
-const cookies = new Cookies();
+const cookies = new Cookies(document.cookie);
 
 /**
  * Sets a cookie when the name, value and path is passed in.

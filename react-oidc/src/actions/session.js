@@ -50,6 +50,7 @@ export const resetAuthenticatedSession = () => {
     removeCookie("ID_TOKEN");
     removeCookie("TOKEN_TYPE");
     removeCookie("EXPIRES_IN");
+    removeCookie("CODE_VERIFIER");
 };
 
 /**
@@ -88,4 +89,13 @@ export const getAllSessionParameters = () => {
  */
 export const decodeIdToken = (token) => {
     return JSON.parse(atob(token.split(".")[1]));
+};
+
+
+export const setCodeVerifier = (codeVerifier) => {
+    setCookie("CODE_VERIFIER", codeVerifier);
+};
+
+export const getCodeVerifier = () => {
+    return getCookie("CODE_VERIFIER");
 };

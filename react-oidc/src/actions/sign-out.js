@@ -26,4 +26,5 @@ export const dispatchLogout = () => {
     // Clear the session storage
     resetAuthenticatedSession();
     window.location.href = `${CONFIG.LOGOUT_URL}?id_token_hint=${token}&post_logout_redirect_uri=${CONFIG.REDIRECT_URI}`;
+    // window.location.href = "/login";
 };
