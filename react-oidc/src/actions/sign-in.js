@@ -69,7 +69,7 @@ const getTokenRequestHeaders = () => {
     return {
         headers: {
             "Accept": "application/json",
-            "Access-Control-Allow-Origin": `${ CONFIG.CLIENT_URL }`,
+            // "Access-Control-Allow-Origin": `${ CONFIG.CLIENT_URL }`,
             "Content-Type": "application/x-www-form-urlencoded"
         }
     };
