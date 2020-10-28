@@ -16,14 +16,14 @@
  * under the License.
  */
 
-import React from 'react';
-import './App.css';
+import React from "react";
+import "./App.css";
 import HomeComponent from "./Home";
 
 function App() {
-  return (
-    <HomeComponent />
-  );
+    return (
+        <HomeComponent/>
+    );
 }
 
 export default App;

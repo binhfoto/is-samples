@@ -60,7 +60,7 @@ export const resetAuthenticatedSession = () => {
  */
 export const isValidSession = () => {
     const token = getCookie("ACCESS_TOKEN");
-    return !!token;
+    return Boolean(token);
 };
 
 /**
