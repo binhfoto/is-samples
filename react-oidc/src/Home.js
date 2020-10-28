@@ -30,6 +30,7 @@ import {
     setCodeVerifier
 } from "./actions/session";
 import getPKCE from "./actions/pkce";
+import {fetchUserProfile} from "./actions/profile";
 
 class HomeComponent extends React.Component {
 
@@ -58,6 +59,7 @@ class HomeComponent extends React.Component {
         // See if there is a valid session.
         if (isValidSession()) {
             const session = getAllSessionParameters();
+
             const _tokenResponse = {
                 access_token: session.ACCESS_TOKEN,
                 refresh_token: session.REFRESH_TOKEN,
@@ -66,11 +68,14 @@ class HomeComponent extends React.Component {
                 token_type: session.TOKEN_TYPE,
                 expires_in: parseInt(session.EXPIRES_IN),
             };
+
             this.setState({
                 tokenResponse: _tokenResponse,
                 idToken: decodeIdToken(session.ID_TOKEN),
                 isLoggedIn: true
             });
+
+            this.fetchUserProfile(session.ACCESS_TOKEN);
             return;
         }
 
@@ -111,8 +116,17 @@ class HomeComponent extends React.Component {
         dispatchLogout();
     };
 
+    async fetchUserProfile(accessToken) {
+        const profile = await fetchUserProfile(accessToken);
+        if (profile) {
+            this.setState({
+                profile
+            });
+        }
+    }
+
     render() {
-        const {tokenResponse, idToken, isLoggedIn} = this.state;
+        const {tokenResponse, idToken, isLoggedIn, profile} = this.state;
         return (
             <div className="container home-container">
                 <div className="wso2-logo-block">
@@ -135,6 +149,14 @@ class HomeComponent extends React.Component {
                                 <ReactJson src={idToken} collapseStringsAfterLength={50}/>
                             </div>
                             <br/>
+                            {profile && <>
+                                <h2>Profile</h2>
+                                <div className="card token-request-block">
+                                    <ReactJson src={profile} collapseStringsAfterLength={50}/>
+                                </div>
+                                <br/>
+                            </>
+                            }
                             <button className="btn btn-danger" onClick={this.handleLogoutBtnClick}>LOGOUT</button>
                         </>
                         :

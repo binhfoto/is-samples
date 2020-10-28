@@ -12,15 +12,16 @@
 //     "COOKIE_PATH": "/"
 // };
 export const CONFIG = {
-    "TOKEN_ENDPOINT": "https://vominhvo.tech/oauth2/token",
-    "AUTHORIZE_ENDPOINT": "https://vominhvo.tech/oauth2/authorize",
-    "LOGOUT_URL": "https://vominhvo.tech/oidc/logout",
+    "TOKEN_ENDPOINT": "https://htid.hungthinhcorp.com.vn/oauth2/token",
+    "AUTHORIZE_ENDPOINT": "https://htid.hungthinhcorp.com.vn/oauth2/authorize",
+    "LOGOUT_URL": "https://htid.hungthinhcorp.com.vn/oidc/logout",
     "RESPONSE_TYPE": "code",
-    "SCOPE": "openid",
+    "SCOPE": "openid ",
     "REDIRECT_URI": "https://localhost:9000/login",
-    "CLIENT_ID": "fotwsv9hX5op2b13t3AuOmirxBka",
-    "CLIENT_SECRET": "Cn_oVisHez_HcCStO2WThj3I7fIa",
+    "CLIENT_ID": "C7Uj0Civ7kH6S85tEzbKxttBj_oa",
+    "CLIENT_SECRET": "vwUXB7scqHfbDXUH5f1WqlfwJcQa",
     "GRANT_TYPE": "authorization_code",
-    "CLIENT_URL": "https://localhost:9000",
-    "COOKIE_PATH": "/"
+    "CLIENT_URL": "https://htid.hungthinhcorp.com.vn:9000",
+    "COOKIE_PATH": "/",
+    "PROFILE_SERVICE_URL": "https://profile-demo-ht.herokuapp.com",
 };
