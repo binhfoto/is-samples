@@ -1,26 +1,8 @@
-/**
- * Copyright (c) 2019, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
- *
- * WSO2 Inc. licenses this file to you under the Apache License,
- * Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied. See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
-import React from "react";
+import React, {useEffect, useState, useRef} from "react";
+import ReactJson from "react-json-view";
 import logo from "./logo.svg";
 import ISLogo from "./wso2_is.svg";
 import {sendAuthorizationRequest, sendTokenRequest} from "./actions/sign-in";
-import ReactJson from 'react-json-view';
 import {dispatchLogout} from "./actions/sign-out";
 import {
     isValidSession,
@@ -30,34 +12,28 @@ import {
     setCodeVerifier
 } from "./actions/session";
 import getPKCE from "./actions/pkce";
-import {fetchUserProfile} from "./actions/profile";
+import {fetchUserProfile as fetchUserProfileApi, generateToken} from "./actions/profile";
 
-class HomeComponent extends React.Component {
+export default function Home() {
 
-    constructor(props) {
-        super(props);
+    const pkcePair = useRef(getPKCE());
 
-        this.pkcePair = getPKCE();
+    const [profile, setProfile] = useState({});
 
-        this.state = {
-            idToken: {},
-            tokenResponse: {},
-            isLoggedIn: false
-        };
-    }
+    const [state, setState] = useState({
+        idToken: {},
+        tokenResponse: {},
+        isLoggedIn: false,
+        profile: {},
+    });
 
-    componentDidMount() {
-        const codeVerifier = getCodeVerifier();
-        const code = new URL(window.location.href).searchParams.get("code");
+    const isSessionValid = isValidSession();
 
-        if (!code || !codeVerifier) {
-            setCodeVerifier(this.pkcePair.codeVerifier);
-        }
-    }
+    useEffect(updateCodeVerifier, []);
 
-    UNSAFE_componentWillMount() {
-        // See if there is a valid session.
-        if (isValidSession()) {
+    useEffect(() => {
+        if (isSessionValid) {
+
             const session = getAllSessionParameters();
 
             const _tokenResponse = {
@@ -69,102 +45,101 @@ class HomeComponent extends React.Component {
                 expires_in: parseInt(session.EXPIRES_IN),
             };
 
-            this.setState({
+            setState({
                 tokenResponse: _tokenResponse,
                 idToken: decodeIdToken(session.ID_TOKEN),
                 isLoggedIn: true
             });
 
-            this.fetchUserProfile(session.ACCESS_TOKEN);
+            fetchUserProfile(session.ACCESS_TOKEN);
+        } else {
+            handleRequestToken();
+        }
+    }, [isSessionValid]);
+
+    function handleRequestToken() {
+        const code = new URL(window.location.href).searchParams.get("code");
+        if (isSessionValid || !code) {
             return;
         }
 
-        // Reads the URL and retrieves the `code` param.
+        const codeVerifier = getCodeVerifier();
+        sendTokenRequest(code, codeVerifier)
+            .then(response => {
+                console.log("TOKEN REQUEST SUCCESS", response);
+                setState({
+                    tokenResponse: response[0],
+                    idToken: response[1],
+                    isLoggedIn: true
+                });
+            })
+            .catch((error => {
+                console.log("TOKEN REQUEST ERROR", error);
+                setState({isLoggedIn: false});
+            }));
+    }
+
+    // set Code Verifier to cookies
+    function updateCodeVerifier() {
+        const codeVerifier = getCodeVerifier();
         const code = new URL(window.location.href).searchParams.get("code");
 
-        // If a authorization code exists, sends a token request.
-        if (code) {
-            const codeVerifier = getCodeVerifier();
-
-            sendTokenRequest(code, codeVerifier)
-                .then(response => {
-                    console.log("TOKEN REQUEST SUCCESS", response);
-                    this.setState({
-                        tokenResponse: response[0],
-                        idToken: response[1],
-                        isLoggedIn: true
-                    });
-                })
-                .catch((error => {
-                    console.log("TOKEN REQUEST ERROR", error);
-                    this.setState({isLoggedIn: false});
-                }));
+        if (!code || !codeVerifier) {
+            setCodeVerifier(pkcePair.current.codeVerifier);
         }
     }
 
-    /**
-     * Handles login button click
-     */
-    handleLoginBtnClick = () => {
-        sendAuthorizationRequest(this.pkcePair.codeChallenge);
-    };
-
-    /**
-     * Handles logout button click
-     */
-    handleLogoutBtnClick = () => {
-        dispatchLogout();
-    };
-
-    async fetchUserProfile(accessToken) {
-        const profile = await fetchUserProfile(accessToken);
+    async function fetchUserProfile(accessToken) {
+        const apimAccessToken = await generateToken();
+        const profile = await fetchUserProfileApi(accessToken, apimAccessToken);
         if (profile) {
-            this.setState({
-                profile
-            });
+            setProfile(profile);
         }
     }
 
-    render() {
-        const {tokenResponse, idToken, isLoggedIn, profile} = this.state;
-        return (
-            <div className="container home-container">
-                <div className="wso2-logo-block">
-                    <img src={logo} className="wso2-logo" alt="logo"/>
-                    <br/>
-                    <img src={ISLogo} className="wso2-is-logo" alt="is_logo"/><span>OIDC SPA React Demo</span>
-                </div>
-                <br/>
-                {
-                    isLoggedIn ?
-                        <>
-                            <br/>
-                            <h2>Token Response</h2>
-                            <div className="card access-request-block">
-                                <ReactJson src={tokenResponse} collapseStringsAfterLength={50}/>
-                            </div>
-                            <br/>
-                            <h2>ID Token</h2>
-                            <div className="card token-request-block">
-                                <ReactJson src={idToken} collapseStringsAfterLength={50}/>
-                            </div>
-                            <br/>
-                            {profile && <>
-                                <h2>Profile</h2>
-                                <div className="card token-request-block">
-                                    <ReactJson src={profile} collapseStringsAfterLength={50}/>
-                                </div>
-                                <br/>
-                            </>
-                            }
-                            <button className="btn btn-danger" onClick={this.handleLogoutBtnClick}>LOGOUT</button>
-                        </>
-                        :
-                        <button className="btn btn-primary" onClick={this.handleLoginBtnClick}>LOGIN</button>
-                }
-            </div>
-        )
+    function handleLoginBtnClick() {
+        sendAuthorizationRequest(pkcePair.current.codeChallenge);
     }
-}
 
-export default HomeComponent;
+    function handleLogoutBtnClick() {
+        dispatchLogout();
+    }
+
+    return (
+        <div className="container home-container">
+            <div className="wso2-logo-block">
+                <img src={logo} className="wso2-logo" alt="logo"/>
+                <br/>
+                <img src={ISLogo} className="wso2-is-logo" alt="is_logo"/><span>OIDC SPA React Demo</span>
+            </div>
+            <br/>
+            {
+                state.isLoggedIn ?
+                    <>
+                        <br/>
+                        <h2>Token Response</h2>
+                        <div className="card access-request-block">
+                            <ReactJson src={state.tokenResponse} collapseStringsAfterLength={50}/>
+                        </div>
+                        <br/>
+                        <h2>ID Token</h2>
+                        <div className="card token-request-block">
+                            <ReactJson src={state.idToken} collapseStringsAfterLength={50}/>
+                        </div>
+                        <br/>
+                        {profile && <>
+                            <h2>Profile</h2>
+                            <div className="card token-request-block">
+                                <ReactJson src={profile} collapseStringsAfterLength={50}/>
+                            </div>
+                            <br/>
+                        </>
+                        }
+                        <button className="btn btn-danger" onClick={handleLogoutBtnClick}>LOGOUT</button>
+                    </>
+                    :
+                    <button className="btn btn-primary" onClick={handleLoginBtnClick}>LOGIN</button>
+            }
+        </div>
+    )
+}
