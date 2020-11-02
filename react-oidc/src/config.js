@@ -22,7 +22,7 @@ export const CONFIG = {
     // endpoint of User Profile service
     "PROFILE_SERVICE_URL": "https://profile-demo-ht.herokuapp.com",
 
-    "APIM_URL": "https://htam.hungthinhcorp.com.vn",
+    "APIM_URL": "https://htapi.hungthinhcorp.com.vn",
     // consumer key of API subscription on devportal
     "APIM_ID": "RvY71oGbLJUGK9IPF5X25Vn93lwa",
     // consumer secret of API subscription on devportal
