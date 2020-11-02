@@ -1,7 +1,5 @@
 import React, {useEffect, useState, useRef} from "react";
 import ReactJson from "react-json-view";
-import logo from "./logo.svg";
-import ISLogo from "./wso2_is.svg";
 import {sendAuthorizationRequest, sendTokenRequest} from "./actions/sign-in";
 import {dispatchLogout} from "./actions/sign-out";
 import {
@@ -107,11 +105,7 @@ export default function Home() {
 
     return (
         <div className="container home-container">
-            <div className="wso2-logo-block">
-                <img src={logo} className="wso2-logo" alt="logo"/>
-                <br/>
-                <img src={ISLogo} className="wso2-is-logo" alt="is_logo"/><span>OIDC SPA React Demo</span>
-            </div>
+            <h1 className="ht-id">HT ID - Single Page App Demo</h1>
             <br/>
             {
                 state.isLoggedIn ?
